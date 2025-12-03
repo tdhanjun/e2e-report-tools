@@ -1,0 +1,32 @@
+# ==============================================
+# Generate Allure Report Shortcut Template
+# ==============================================
+# This is a template for the macOS Shortcut
+# Placeholders will be replaced by install-shortcuts.sh
+# ==============================================
+
+Receive Files from Quick Actions
+
+Run Shell Script:
+-------------------------------------------
+# Give script execute permission
+chmod +x "{{SCRIPT_PATH}}"
+
+# Run the script with the file path
+"{{NODE_BIN}}" "{{SCRIPT_PATH}}" run "$1" >> /tmp/allure-cli.log 2>&1
+-------------------------------------------
+
+Shell: bash
+Input: Shortcut Input
+Pass Input: as arguments
+
+Details:
+- Show in Spotlight: ✓
+- Use as Quick Action:
+  - Finder: ✓
+  - Services Menu: ✓
+
+Privacy:
+- Allow Running When Locked
+- Allow this shortcut to access: Shell ✓
+- Allow Run Shell Script to use: Finder (Always Allow)

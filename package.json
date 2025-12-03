@@ -1,0 +1,35 @@
+{
+  "name": "e2e-report-tools",
+  "version": "1.0.0",
+  "description": "Quick view Allure reports and Playwright trace files on macOS with Shortcuts integration",
+  "main": "allure-tool/allure-cli.js",
+  "scripts": {
+    "setup": "node setup.js",
+    "shortcuts-info": "node setup.js --shortcuts-info",
+    "install-shortcuts": "chmod +x shortcuts/install-shortcuts.sh && ./shortcuts/install-shortcuts.sh",
+    "generate-shortcuts": "chmod +x shortcuts/generate-shortcuts.sh && ./shortcuts/generate-shortcuts.sh",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "allure",
+    "playwright",
+    "trace",
+    "test-report",
+    "macos",
+    "shortcuts"
+  ],
+  "author": "tdhanjun",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tdhanjun/e2e-report-tools.git"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^5.2.1",
+    "http-server": "^14.1.1",
+    "open": "^11.0.0",
+    "tar": "^7.5.2",
+    "unzipper": "^0.12.3"
+  }
+}

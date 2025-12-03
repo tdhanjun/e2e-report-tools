@@ -1,0 +1,42 @@
+# ==============================================
+# Open Trace Shortcut Template
+# ==============================================
+# This is a template for the macOS Shortcut
+# Placeholders will be replaced by install-shortcuts.sh
+# ==============================================
+
+Receive Files from Quick Actions
+
+Run Shell Script:
+-------------------------------------------
+# Give script execute permission
+chmod +x "{{SCRIPT_PATH}}"
+
+echo "=== START SHORTCUT TRACE ===" >> /tmp/allure-cli.log
+echo "[Shortcut] raw args: $@" >> /tmp/allure-cli.log
+echo "[Shortcut] arg count: $#" >> /tmp/allure-cli.log
+
+# Set PATH to include Node.js
+export PATH="$(dirname {{NODE_BIN}}):/usr/local/bin:/usr/bin:/bin:$PATH"
+
+tracePath="$1"
+echo "[Shortcut] tracePath received: $tracePath" >> /tmp/allure-cli.log
+
+# Run the trace viewer
+"{{NODE_BIN}}" "{{SCRIPT_PATH}}" trace "$tracePath" >> /tmp/allure-cli.log 2>&1
+-------------------------------------------
+
+Shell: bash
+Input: Shortcut Input
+Pass Input: as arguments
+
+Details:
+- Show in Spotlight: ✓
+- Use as Quick Action:
+  - Finder: ✓
+  - Services Menu: ✓
+
+Privacy:
+- Allow Running When Locked
+- Allow this shortcut to access: Shell ✓
+- Allow Run Shell Script to use: Finder (Always Allow)
