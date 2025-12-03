@@ -71,7 +71,7 @@ async function unzipToFolder(filePath) {
       if (file.endsWith(".zip")) {
         const nestedZip = path.join(targetFolder, file);
         console.log(`[Allure CLI] ⚡ Detected nested zip: ${file}, unzipping again...`);
-        await extractArchive(nestedZip);
+        await unzipToFolder(nestedZip);
         await fs.promises.unlink(nestedZip);
       }
     }
