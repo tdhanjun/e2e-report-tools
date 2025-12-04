@@ -9,21 +9,21 @@ Receive Files from Quick Actions
 
 Run Shell Script:
 -------------------------------------------
+# Set PATH to include Node.js binaries (needed for npx)
+export PATH="$(dirname {{NODE_BIN}}):/usr/local/bin:/usr/bin:/bin:$PATH"
+
 # Give script execute permission
 chmod +x "{{SCRIPT_PATH}}"
 
-echo "=== START SHORTCUT TRACE ===" >> /tmp/allure-cli.log
-echo "[Shortcut] raw args: $@" >> /tmp/allure-cli.log
-echo "[Shortcut] arg count: $#" >> /tmp/allure-cli.log
-
-# Set PATH to include Node.js
-export PATH="$(dirname {{NODE_BIN}}):/usr/local/bin:/usr/bin:/bin:$PATH"
+echo "=== START SHORTCUT TRACE ===" >> "{{PROJECT_PATH}}/logs/allure-cli.log"
+echo "[Shortcut] raw args: $@" >> "{{PROJECT_PATH}}/logs/allure-cli.log"
+echo "[Shortcut] arg count: $#" >> "{{PROJECT_PATH}}/logs/allure-cli.log"
 
 tracePath="$1"
-echo "[Shortcut] tracePath received: $tracePath" >> /tmp/allure-cli.log
+echo "[Shortcut] tracePath received: $tracePath" >> "{{PROJECT_PATH}}/logs/allure-cli.log"
 
 # Run the trace viewer
-"{{NODE_BIN}}" "{{SCRIPT_PATH}}" trace "$tracePath" >> /tmp/allure-cli.log 2>&1
+"{{NODE_BIN}}" "{{SCRIPT_PATH}}" trace "$tracePath" >> "{{PROJECT_PATH}}/logs/allure-cli.log" 2>&1
 -------------------------------------------
 
 Shell: bash

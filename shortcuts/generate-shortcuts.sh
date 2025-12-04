@@ -78,7 +78,7 @@ echo ""
 # Shortcut 1: Generate Allure Report
 print_header "Shortcut 1: Generate Allure Report"
 echo ""
-print_info "1. In Shortcuts app, click '+' to create a new shortcut"
+print_info "1. In Shortcuts app, click '+' to create a new Quick Actions"
 print_info "2. Name it: ${BOLD}Generate Allure Report${NC}"
 print_info "3. Search for 'Run Shell Script' action and add it"
 print_info "4. We'll copy the script to clipboard - just paste it!"
@@ -86,10 +86,11 @@ echo ""
 echo "Press any key to copy the script to clipboard..."
 read -n 1 -s
 
-SCRIPT1="chmod +x \"${SCRIPT_PATH}\"
-\"${NODE_BIN}\" \"${SCRIPT_PATH}\" run \"\$@\" >> /tmp/allure-cli.log 2>&1"
+SCRIPT1="# Execute the report generator
+chmod +x \"${SCRIPT_PATH}\"
+\"${NODE_BIN}\" \"${SCRIPT_PATH}\" run \"\$@\" >> \"${PROJECT_PATH}/logs/allure-cli.log\" 2>&1"
 
-echo "$SCRIPT1" | pbcopy
+printf "%s" "$SCRIPT1" | /usr/bin/pbcopy
 
 print_success "Script copied to clipboard! Now:"
 echo ""
@@ -118,10 +119,11 @@ echo ""
 echo "Press any key to copy the script..."
 read -n 1 -s
 
-SCRIPT2="chmod +x \"${SCRIPT_PATH}\"
-\"${NODE_BIN}\" \"${SCRIPT_PATH}\" open \"\$@\" >> /tmp/allure-cli.log 2>&1"
+SCRIPT2="# Open the report
+chmod +x \"${SCRIPT_PATH}\"
+\"${NODE_BIN}\" \"${SCRIPT_PATH}\" open \"\$@\" >> \"${PROJECT_PATH}/logs/allure-cli.log\" 2>&1"
 
-echo "$SCRIPT2" | pbcopy
+printf "%s" "$SCRIPT2" | /usr/bin/pbcopy
 
 print_success "Script copied! Paste and configure the same way."
 echo ""
@@ -143,12 +145,19 @@ echo ""
 echo "Press any key to copy the script..."
 read -n 1 -s
 
-SCRIPT3="chmod +x \"${SCRIPT_PATH}\"
-echo \"=== START TRACE ===\" >> /tmp/allure-cli.log
+SCRIPT3="# Set PATH to include Node.js binaries (needed for npx)
 export PATH=\"\$(dirname ${NODE_BIN}):/usr/local/bin:/usr/bin:/bin:\$PATH\"
-\"${NODE_BIN}\" \"${SCRIPT_PATH}\" trace \"\$@\" >> /tmp/allure-cli.log 2>&1"
 
-echo "$SCRIPT3" | pbcopy
+# Open Playwright trace
+chmod +x \"${SCRIPT_PATH}\"
+echo \"=== START TRACE ===\" >> \"${PROJECT_PATH}/logs/allure-cli.log\"
+
+tracePath=\"\$1\"
+echo \"[Shortcut] tracePath: \$tracePath\" >> \"${PROJECT_PATH}/logs/allure-cli.log\"
+
+\"${NODE_BIN}\" \"${SCRIPT_PATH}\" trace \"\$tracePath\" >> \"${PROJECT_PATH}/logs/allure-cli.log\" 2>&1"
+
+printf "%s" "$SCRIPT3" | /usr/bin/pbcopy
 
 print_success "Script copied! Paste and configure the same way."
 echo ""

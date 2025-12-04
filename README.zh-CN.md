@@ -41,10 +41,10 @@ E2E Report Tools 是一个 macOS 实用工具，与 Finder 的快捷操作集成
 # 安装 Homebrew（如果尚未安装）
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# 安装 Java
+# 安装 Java（如果尚未安装）
 brew install openjdk@21
 
-# 安装 Allure
+# 安装 Allure（如果尚未安装）
 brew install allure
 
 # 安装 Node.js（如果未使用 nvm）
@@ -198,18 +198,18 @@ e2e-report-tools/
 ├── setup.js                  # 环境设置脚本
 ├── README.md                 # 英文文档
 ├── README.zh-CN.md          # 本文件（中文文档）
+├── logs/                     # 日志目录
+│   └── allure-cli.log       # 运行日志
 ├── allure-tool/
 │   └── allure-cli.js        # 主 CLI 工具
 └── shortcuts/
     ├── README.md            # Shortcuts 设置指南
-    ├── install-shortcuts.sh # 安装辅助脚本
-    ├── templates/           # 快捷指令模板
-    │   ├── generateAllureReport.template
-    │   ├── openAllureReport.template
-    │   └── openTrace.template
-    ├── generateAllureReport  # 你的原始文件
-    ├── openAllureReport      # （供参考）
-    └── openTrace
+    ├── generate-shortcuts.sh # 交互式安装向导
+    ├── install-shortcuts.sh # 模板生成脚本
+    └── templates/           # 快捷指令模板
+        ├── generateAllureReport.template
+        ├── openAllureReport.template
+        └── openTrace.template
 ```
 
 ## 🔧 配置
@@ -290,7 +290,7 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 **解决方案**: 检查日志文件：
 
 ```bash
-tail -f /tmp/allure-cli.log
+tail -f logs/allure-cli.log
 ```
 
 ### 运行时问题

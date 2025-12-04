@@ -13,7 +13,7 @@ Run Shell Script:
 chmod +x "{{SCRIPT_PATH}}"
 
 # Run the script with the file path
-"{{NODE_BIN}}" "{{SCRIPT_PATH}}" run "$1" >> /tmp/allure-cli.log 2>&1
+"{{NODE_BIN}}" "{{SCRIPT_PATH}}" run "$1" >> "{{PROJECT_PATH}}/logs/allure-cli.log" 2>&1
 -------------------------------------------
 
 Shell: bash

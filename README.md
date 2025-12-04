@@ -287,7 +287,7 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 **Solution**: Check the log file:
 
 ```bash
-tail -f /tmp/allure-cli.log
+tail -f logs/allure-cli.log
 ```
 
 ### Runtime Issues
@@ -324,6 +324,23 @@ Display current configuration values:
 ```bash
 npm run shortcuts-info
 ```
+
+### Debug Mode
+
+Enable detailed logging:
+
+```bash
+# Add to .env file
+DEBUG=true
+
+# Then run commands normally
+node allure-tool/allure-cli.js run /path/to/file.zip
+```
+
+Debug mode will show:
+- Resolved Allure path (real vs wrapper)
+- Environment configuration
+- Detailed execution logs
 
 ### Manual Path Configuration
 

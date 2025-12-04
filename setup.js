@@ -85,8 +85,14 @@ function detectAllure() {
   const allurePath = execCommand('which allure');
   
   if (allurePath) {
-    // 尝试获取版本
-    const allureVersion = execCommand('allure --version 2>&1 | head -n 1');
+    // 验证 Allure 是否可用（忽略 Java 错误）
+    const allureVersion = execCommand('allure --version 2>&1 | grep -v "dyld" | grep -v "Library not loaded" | head -n 1');
+    
+    // 如果是 Homebrew 安装的，提供额外信息
+    if (allurePath.includes('/homebrew/bin/allure')) {
+      console.log('ℹ️  Detected Homebrew installation - will use libexec path to avoid wrapper issues');
+    }
+    
     return { path: allurePath, version: allureVersion || 'Unknown' };
   }
   

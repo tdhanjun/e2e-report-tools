@@ -19,6 +19,7 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 // ======================
 const BASE_PORT = 8000;
 const MAX_PORT = 8010;
+const DEBUG = process.env.DEBUG === 'true';
 
 // 从环境变量读取配置
 const JAVA_HOME = process.env.JAVA_HOME;
@@ -29,6 +30,40 @@ if (!JAVA_HOME || !ALLURE_BIN) {
   console.error('[Allure CLI] ❌ Configuration missing!');
   console.error('[Allure CLI] Please run: npm run setup');
   process.exit(1);
+}
+
+// ======================
+// 解析真实的 Allure 路径（绕过 Homebrew wrapper）
+// ======================
+function getRealAllurePath() {
+  let realPath = ALLURE_BIN;
+  
+  // 如果是 Homebrew 安装的 Allure，提取真实路径
+  if (ALLURE_BIN.includes('/homebrew/bin/allure')) {
+    try {
+      const wrapperContent = fs.readFileSync(ALLURE_BIN, 'utf8');
+      const match = wrapperContent.match(/"([^"]+libexec\/bin\/allure)"/);
+      if (match) {
+        realPath = match[1];
+        if (DEBUG) {
+          console.log(`[Allure CLI] [DEBUG] Resolved real allure path: ${realPath}`);
+        }
+      }
+    } catch (e) {
+      console.warn('[Allure CLI] [WARN] Could not extract real allure path, using configured path');
+    }
+  }
+  
+  return realPath;
+}
+
+const REAL_ALLURE_BIN = getRealAllurePath();
+
+if (DEBUG) {
+  console.log('[Allure CLI] [DEBUG] Configuration:');
+  console.log(`[Allure CLI] [DEBUG]   JAVA_HOME: ${JAVA_HOME}`);
+  console.log(`[Allure CLI] [DEBUG]   ALLURE_BIN: ${ALLURE_BIN}`);
+  console.log(`[Allure CLI] [DEBUG]   REAL_ALLURE_BIN: ${REAL_ALLURE_BIN}`);
 }
 // ======================
 // 全局 server 引用
@@ -176,9 +211,10 @@ async function run(zipFile) {
   const reportDir = path.join(folder, "report");
   try {
     console.log(`[Allure CLI] ⚡ Generating Allure report...`);
-    // ✅ 修复 JAVA_HOME 环境，解决 libjli.dylib 找不到
+    
+    // ✅ 使用预解析的真实 Allure 路径，并传递正确的 JAVA_HOME
     execSync(
-      `"${ALLURE_BIN}" generate "${resultsPath}" -o "${reportDir}" --clean`,
+      `"${REAL_ALLURE_BIN}" generate "${resultsPath}" -o "${reportDir}" --clean`,
       { stdio: "inherit", env: { ...process.env, JAVA_HOME } }
     );
     console.log(`[Allure CLI] ✅ Report generated: ${reportDir}`);
