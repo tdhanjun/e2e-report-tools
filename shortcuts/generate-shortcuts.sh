@@ -9,7 +9,7 @@
 
 set -e
 
-# 颜色定义
+# color map
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -44,7 +44,7 @@ print_step() {
     echo -e "${BOLD}$1${NC}"
 }
 
-# 检查 .env 文件
+# check .env
 if [ ! -f ".env" ]; then
     print_error ".env file not found!"
     echo ""
@@ -52,7 +52,7 @@ if [ ! -f ".env" ]; then
     exit 1
 fi
 
-# 加载环境变量
+# load env
 export $(grep -v '^#' .env | xargs)
 
 print_header "macOS Shortcuts Installation Helper"
@@ -125,7 +125,14 @@ chmod +x \"${SCRIPT_PATH}\"
 
 printf "%s" "$SCRIPT2" | /usr/bin/pbcopy
 
-print_success "Script copied! Paste and configure the same way."
+print_success "Script copied to clipboard! Now:"
+echo ""
+echo "  4. Paste (Cmd+V) into the 'Run Shell Script' action"
+echo "  5. Set Shell: bash"
+echo "  6. Set Input: Shortcut Input"
+echo "  7. Set Pass input: as arguments"
+echo "  8. Click (i) Details → Enable 'Use as Quick Action'"
+echo "  9. Check 'Finder' and 'Services Menu'"
 echo ""
 echo "Press any key when done..."
 read -n 1 -s
@@ -159,7 +166,14 @@ echo \"[Shortcut] tracePath: \$tracePath\" >> \"${PROJECT_PATH}/logs/allure-cli.
 
 printf "%s" "$SCRIPT3" | /usr/bin/pbcopy
 
-print_success "Script copied! Paste and configure the same way."
+print_success "Script copied to clipboard! Now:"
+echo ""
+echo "  4. Paste (Cmd+V) into the 'Run Shell Script' action"
+echo "  5. Set Shell: bash"
+echo "  6. Set Input: Shortcut Input"
+echo "  7. Set Pass input: as arguments"
+echo "  8. Click (i) Details → Enable 'Use as Quick Action'"
+echo "  9. Check 'Finder' and 'Services Menu'"
 echo ""
 echo "Press any key when done..."
 read -n 1 -s
@@ -178,197 +192,4 @@ echo "  • Open Allure Report - for report folders"
 echo "  • Open Trace - for Playwright trace files"
 echo ""
 print_success "Enjoy! 🚀"
-echo ""
-
-# 颜色定义
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-print_header() {
-    echo -e "${BLUE}=================================================="
-    echo -e "$1"
-    echo -e "==================================================${NC}"
-}
-
-print_success() {
-    echo -e "${GREEN}✅ $1${NC}"
-}
-
-print_error() {
-    echo -e "${RED}❌ $1${NC}"
-}
-
-print_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
-}
-
-print_info() {
-    echo -e "${BLUE}ℹ️  $1${NC}"
-}
-
-# 检查 .env 文件
-if [ ! -f ".env" ]; then
-    print_error ".env file not found!"
-    echo ""
-    print_info "Please run 'npm run setup' first."
-    exit 1
-fi
-
-# 加载环境变量
-export $(grep -v '^#' .env | xargs)
-
-print_header "macOS Shortcuts Generator"
-echo ""
-
-# 生成 .shortcut 文件的函数
-generate_shortcut_plist() {
-    local name="$1"
-    local description="$2"
-    local shell_script="$3"
-    local input_type="$4"  # "Files" or "Folders"
-    
-    cat > "/tmp/${name}.plist" <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>WFWorkflowActions</key>
-    <array>
-        <dict>
-            <key>WFWorkflowActionIdentifier</key>
-            <string>is.workflow.actions.runshellscript</string>
-            <key>WFWorkflowActionParameters</key>
-            <dict>
-                <key>WFInputMethod</key>
-                <string>Input</string>
-                <key>WFShellScriptActionRunAsAdministrator</key>
-                <false/>
-                <key>WFShellScriptActionScript</key>
-                <string>${shell_script}</string>
-                <key>WFShellScriptActionSource</key>
-                <string>Inline</string>
-            </dict>
-        </dict>
-    </array>
-    <key>WFWorkflowClientRelease</key>
-    <string>900</string>
-    <key>WFWorkflowClientVersion</key>
-    <string>2601</string>
-    <key>WFWorkflowIcon</key>
-    <dict>
-        <key>WFWorkflowIconGlyphNumber</key>
-        <integer>59511</integer>
-        <key>WFWorkflowIconStartColor</key>
-        <integer>431817727</integer>
-    </dict>
-    <key>WFWorkflowImportQuestions</key>
-    <array/>
-    <key>WFWorkflowInputContentItemClasses</key>
-    <array>
-        <string>WFGenericFileContentItem</string>
-    </array>
-    <key>WFWorkflowMinimumClientRelease</key>
-    <integer>900</integer>
-    <key>WFWorkflowMinimumClientVersion</key>
-    <string>900</string>
-    <key>WFWorkflowName</key>
-    <string>${name}</string>
-    <key>WFWorkflowTypes</key>
-    <array>
-        <string>ActionExtension</string>
-    </array>
-</dict>
-</plist>
-EOF
-}
-
-print_info "Generating .shortcut files..."
-echo ""
-
-# 1. Generate Allure Report
-SCRIPT1="chmod +x \"${SCRIPT_PATH}\"
-\"${NODE_BIN}\" \"${SCRIPT_PATH}\" run \"\$1\" >> /tmp/allure-cli.log 2>&1"
-
-print_info "Creating: Generate Allure Report.shortcut"
-generate_shortcut_plist "Generate Allure Report" \
-    "Generate Allure HTML report from test results" \
-    "$SCRIPT1" \
-    "Files"
-
-# 使用 shortcuts sign 来创建可导入的文件
-shortcuts sign --mode anyone \
-    --input "/tmp/Generate Allure Report.plist" \
-    --output "shortcuts/Generate Allure Report.shortcut" 2>/dev/null || {
-    print_warning "Could not sign shortcut. Will create unsigned version."
-    cp "/tmp/Generate Allure Report.plist" "shortcuts/Generate Allure Report.shortcut"
-}
-
-print_success "Generated: Generate Allure Report.shortcut"
-
-# 2. Open Allure Report
-SCRIPT2="chmod +x \"${SCRIPT_PATH}\"
-\"${NODE_BIN}\" \"${SCRIPT_PATH}\" open \"\$1\" >> /tmp/allure-cli.log 2>&1"
-
-print_info "Creating: Open Allure Report.shortcut"
-generate_shortcut_plist "Open Allure Report" \
-    "Open an existing Allure report folder" \
-    "$SCRIPT2" \
-    "Folders"
-
-shortcuts sign --mode anyone \
-    --input "/tmp/Open Allure Report.plist" \
-    --output "shortcuts/Open Allure Report.shortcut" 2>/dev/null || {
-    cp "/tmp/Open Allure Report.plist" "shortcuts/Open Allure Report.shortcut"
-}
-
-print_success "Generated: Open Allure Report.shortcut"
-
-# 3. Open Trace
-SCRIPT3="chmod +x \"${SCRIPT_PATH}\"
-echo \"=== START SHORTCUT TRACE ===\" >> /tmp/allure-cli.log
-echo \"[Shortcut] raw args: \$@\" >> /tmp/allure-cli.log
-export PATH=\"\$(dirname ${NODE_BIN}):/usr/local/bin:/usr/bin:/bin:\$PATH\"
-tracePath=\"\$1\"
-echo \"[Shortcut] tracePath received: \$tracePath\" >> /tmp/allure-cli.log
-\"${NODE_BIN}\" \"${SCRIPT_PATH}\" trace \"\$tracePath\" >> /tmp/allure-cli.log 2>&1"
-
-print_info "Creating: Open Trace.shortcut"
-generate_shortcut_plist "Open Trace" \
-    "View Playwright trace files" \
-    "$SCRIPT3" \
-    "Files"
-
-shortcuts sign --mode anyone \
-    --input "/tmp/Open Trace.plist" \
-    --output "shortcuts/Open Trace.shortcut" 2>/dev/null || {
-    cp "/tmp/Open Trace.plist" "shortcuts/Open Trace.shortcut"
-}
-
-print_success "Generated: Open Trace.shortcut"
-
-# 清理临时文件
-rm -f /tmp/*.plist
-
-echo ""
-print_header "Installation Instructions"
-echo ""
-print_success "Three .shortcut files have been created in the shortcuts/ folder:"
-echo ""
-echo "  1. Generate Allure Report.shortcut"
-echo "  2. Open Allure Report.shortcut"
-echo "  3. Open Trace.shortcut"
-echo ""
-print_info "To install, simply double-click each .shortcut file!"
-echo ""
-print_info "macOS will open the Shortcuts app and prompt you to add the shortcut."
-print_info "Click 'Add Shortcut' for each one."
-echo ""
-print_warning "Note: You may need to grant permissions for the shortcuts to:"
-echo "  - Run shell scripts"
-echo "  - Access files in Finder"
-echo ""
-print_success "Setup complete! 🎉"
 echo ""

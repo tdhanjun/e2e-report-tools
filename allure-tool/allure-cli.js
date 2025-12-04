@@ -10,22 +10,22 @@ const open = require("open").default;
 const { spawn } = require('child_process');
 
 // ======================
-// 加载配置
+// Load Configuration
 // ======================
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 // ======================
-// 配置区
+// Configuration
 // ======================
 const BASE_PORT = 8000;
 const MAX_PORT = 8010;
 const DEBUG = process.env.DEBUG === 'true';
 
-// 从环境变量读取配置
+// Read configuration from environment variables
 const JAVA_HOME = process.env.JAVA_HOME;
 const ALLURE_BIN = process.env.ALLURE_BIN;
 
-// 配置检查
+// Configuration validation
 if (!JAVA_HOME || !ALLURE_BIN) {
   console.error('[Allure CLI] ❌ Configuration missing!');
   console.error('[Allure CLI] Please run: npm run setup');
@@ -33,12 +33,20 @@ if (!JAVA_HOME || !ALLURE_BIN) {
 }
 
 // ======================
-// 解析真实的 Allure 路径（绕过 Homebrew wrapper）
+// Ensure logs directory exists
+// ======================
+const logsDir = path.join(__dirname, '../logs');
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true });
+}
+
+// ======================
+// Resolve real Allure path (bypass Homebrew wrapper)
 // ======================
 function getRealAllurePath() {
   let realPath = ALLURE_BIN;
   
-  // 如果是 Homebrew 安装的 Allure，提取真实路径
+  // If Allure is installed via Homebrew, extract the real path
   if (ALLURE_BIN.includes('/homebrew/bin/allure')) {
     try {
       const wrapperContent = fs.readFileSync(ALLURE_BIN, 'utf8');
@@ -66,12 +74,12 @@ if (DEBUG) {
   console.log(`[Allure CLI] [DEBUG]   REAL_ALLURE_BIN: ${REAL_ALLURE_BIN}`);
 }
 // ======================
-// 全局 server 引用
+// Global server reference
 // ======================
 let currentServer = null;
 
 // ======================
-// 工具函数
+// Utility Functions
 // ======================
 function timestamp() {
   const now = new Date();
@@ -100,7 +108,7 @@ async function unzipToFolder(filePath) {
       .pipe(unzipper.Extract({ path: targetFolder }))
       .promise();
 
-    // 解嵌套 zip
+    // Handle nested zip files
     const files = await fs.promises.readdir(targetFolder);
     for (const file of files) {
       if (file.endsWith(".zip")) {
@@ -166,7 +174,7 @@ async function serveReport(reportDir) {
   const port = await findFreePort();
   const app = express();
 
-  // 强制禁用缓存
+  // Force disable cache
   app.use(express.static(reportDir, {
     setHeaders: (res, path) => {
       res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
@@ -185,7 +193,7 @@ async function serveReport(reportDir) {
 }
 
 // ======================
-// Ctrl+C 只注册一次
+// Register Ctrl+C handler only once
 // ======================
 process.once("SIGINT", () => {
   console.log("\n[Allure CLI] Stopping server...");
@@ -194,7 +202,7 @@ process.once("SIGINT", () => {
 });
 
 // ======================
-// CLI 主逻辑
+// CLI Main Logic
 // ======================
 async function run(zipFile) {
   console.log(`[Allure CLI] 📦 Unzipping → ${zipFile}`);
@@ -212,7 +220,7 @@ async function run(zipFile) {
   try {
     console.log(`[Allure CLI] ⚡ Generating Allure report...`);
     
-    // ✅ 使用预解析的真实 Allure 路径，并传递正确的 JAVA_HOME
+    // ✅ Use pre-resolved real Allure path and pass correct JAVA_HOME
     execSync(
       `"${REAL_ALLURE_BIN}" generate "${resultsPath}" -o "${reportDir}" --clean`,
       { stdio: "inherit", env: { ...process.env, JAVA_HOME } }
@@ -233,7 +241,7 @@ async function openReport(reportDir) {
 async function openTrace(tracePath, browser = 'chromium') {
   console.log(`[Allure CLI] [DEBUG] Received tracePath: "${tracePath}"`);
 
-  // 确保 tracePath 存在
+  // Ensure tracePath exists
   if (!tracePath || !fs.existsSync(tracePath)) {
     console.error(`[Allure CLI] ❌ Trace file not found: "${tracePath}"`);
     return;
@@ -241,7 +249,7 @@ async function openTrace(tracePath, browser = 'chromium') {
 
   console.log(`[Allure CLI] ⚡ Opening Playwright trace → ${tracePath}`);
 
-  // 使用 spawn 打开 trace viewer
+  // Use spawn to open trace viewer
   const proc = spawn('npx', ['playwright', 'show-trace', tracePath], {
     stdio: 'inherit',
     env: { PATH: process.env.PATH }
@@ -257,7 +265,7 @@ async function openTrace(tracePath, browser = 'chromium') {
 }
 
 // ======================
-// 入口
+// Entry Point
 // ======================
 const args = process.argv.slice(2);
 if (args.length < 2) {
@@ -270,7 +278,7 @@ if (args.length < 2) {
 
 const cmd = args[0];
 const target = args[1];
-const browser = args[2]; // 可选，默认 chromium
+const browser = args[2]; // Optional, defaults to chromium
 
 if (cmd === "run") {
   run(target);
