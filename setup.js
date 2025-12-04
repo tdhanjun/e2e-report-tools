@@ -65,12 +65,28 @@ function detectNode() {
 }
 
 function detectJava() {
-  // 尝试使用 /usr/libexec/java_home
+  // 方案 1: 尝试使用 /usr/libexec/java_home (macOS 推荐方式)
   let javaHome = execCommand('/usr/libexec/java_home 2>/dev/null');
   
   if (!javaHome) {
-    // 备用方案:检查 JAVA_HOME 环境变量
+    // 方案 2: 检查 JAVA_HOME 环境变量
     javaHome = process.env.JAVA_HOME;
+  }
+  
+  if (!javaHome) {
+    // 方案 3: 通过 which java 找到 java 可执行文件，然后推导 JAVA_HOME
+    const javaPath = execCommand('which java');
+    if (javaPath) {
+      // java 通常在 $JAVA_HOME/bin/java
+      // 例如: /opt/homebrew/opt/openjdk@17/bin/java -> /opt/homebrew/opt/openjdk@17
+      const binDir = path.dirname(javaPath);
+      javaHome = path.dirname(binDir);
+      
+      // 验证这是一个有效的 JAVA_HOME (应该包含 bin/java)
+      if (!fs.existsSync(path.join(javaHome, 'bin', 'java'))) {
+        javaHome = null;
+      }
+    }
   }
   
   if (javaHome && fs.existsSync(javaHome)) {
