@@ -104,18 +104,42 @@ async function unzipToFolder(filePath) {
   await fs.promises.mkdir(targetFolder, { recursive: true });
 
   if (filePath.endsWith('.zip')) {
-    await fs.createReadStream(filePath)
-      .pipe(unzipper.Extract({ path: targetFolder }))
-      .promise();
+    // Use system unzip command for better compatibility with various zip formats
+    // especially when zip contains trace files or other special attachments
+    try {
+      if (DEBUG) {
+        console.log(`[Allure CLI] [DEBUG] Using system unzip → ${filePath}`);
+      }
+      execSync(`unzip -q "${filePath}" -d "${targetFolder}"`, { stdio: 'inherit' });
+    } catch (err) {
+      // Fallback to unzipper library if system unzip fails
+      console.log(`[Allure CLI] ⚠️ System unzip failed, trying unzipper library...`);
+      await fs.createReadStream(filePath)
+        .pipe(unzipper.Extract({ path: targetFolder }))
+        .promise();
+    }
 
-    // Handle nested zip files
+    // Handle nested zip files (skip attachment files)
     const files = await fs.promises.readdir(targetFolder);
     for (const file of files) {
       if (file.endsWith(".zip")) {
-        const nestedZip = path.join(targetFolder, file);
-        console.log(`[Allure CLI] ⚡ Detected nested zip: ${file}, unzipping again...`);
-        await unzipToFolder(nestedZip);
-        await fs.promises.unlink(nestedZip);
+        // Skip Allure attachment files (e.g., UUID-attachment.zip or trace.zip)
+        if (file.includes("-attachment.zip") || file === "trace.zip") {
+          if (DEBUG) {
+            console.log(`[Allure CLI] [DEBUG] Skipping attachment file: ${file}`);
+          }
+          continue;
+        }
+        
+        // Only unzip nested allure-results.zip or similar result archives
+        if (file.toLowerCase().includes("allure-results")) {
+          const nestedZip = path.join(targetFolder, file);
+          console.log(`[Allure CLI] ⚡ Detected nested zip: ${file}, unzipping again...`);
+          await unzipToFolder(nestedZip);
+          await fs.promises.unlink(nestedZip);
+        } else if (DEBUG) {
+          console.log(`[Allure CLI] [DEBUG] Skipping non-results zip: ${file}`);
+        }
       }
     }
 
