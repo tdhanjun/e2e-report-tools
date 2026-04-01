@@ -1,0 +1,89 @@
+name: Multi-Region Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_all:
+        description: 'Run on ALL regions'
+        type: boolean
+        default: false
+      run_us:
+        description: 'US Region'
+        type: boolean
+        default: false
+      run_eu:
+        description: 'EU Region'
+        type: boolean
+        default: false
+      run_ca:
+        description: 'CA Region'
+        type: boolean
+        default: false
+      run_ap:
+        description: 'AP Region'
+        type: boolean
+        default: false
+      run_uk:
+        description: 'UK Region'
+        type: boolean
+        default: false
+
+jobs:
+  # Job 1: Process inputs and generate the matrix array
+  read-input:
+    name: Prepare Region Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix_array: ${{ steps.set-matrix.outputs.matrix_array }}
+    steps:
+      - id: set-matrix
+        name: Parse Boolean Inputs
+        run: |
+          # Define all possible regions
+          ALL_REGIONS='["US", "EU", "CA", "AP", "UK"]'
+          
+          # Initialize an empty array for selected regions
+          SELECTED_JSON="[]"
+          
+          if [ "${{ github.event.inputs.run_all }}" == "true" ]; then
+            SELECTED_JSON=$ALL_REGIONS
+          else
+            # Create a temporary list of selected regions
+            # We use jq to build the JSON array safely
+            SELECTED_JSON=$(echo "[]" | jq -c \
+              'if "${{ github.event.inputs.run_us }}" == "true" then . += ["US"] else . end |
+               if "${{ github.event.inputs.run_eu }}" == "true" then . += ["EU"] else . end |
+               if "${{ github.event.inputs.run_ca }}" == "true" then . += ["CA"] else . end |
+               if "${{ github.event.inputs.run_ap }}" == "true" then . += ["AP"] else . end |
+               if "${{ github.event.inputs.run_uk }}" == "true" then . += ["UK"] else . end')
+          fi
+          
+          # Safety check: If nothing is selected, the matrix might fail or run zero jobs.
+          # You can choose to exit or set a default.
+          if [ "$SELECTED_JSON" == "[]" ]; then
+            echo "No regions selected. Exiting..."
+            exit 1
+          fi
+          
+          echo "Selected regions: $SELECTED_JSON"
+          echo "matrix_array=$SELECTED_JSON" >> $GITHUB_OUTPUT
+
+  # Job 2: Use the output from 'read-input' to trigger parallel jobs
+  deploy:
+    name: Deploy to ${{ matrix.region }}
+    needs: read-input
+    runs-on: ubuntu-latest
+    strategy:
+      # Ensure that if one region fails, it doesn't cancel others
+      fail-fast: false
+      matrix:
+        region: ${{ fromJson(needs.read-input.outputs.matrix_array) }}
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Execution Step
+        run: |
+          echo "Initiating deployment for region: ${{ matrix.region }}"
+          # Add your actual deployment commands here
